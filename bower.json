@@ -1,0 +1,12 @@
+{
+	"name" : "translate-app",
+	"version": "0.0.1",
+	"dependencies" : {
+		"angular": "~1.4.2",
+		"angular-route": "~1.4.2",
+		"jquery": "~1.11.3",
+		"bootstrap": "~3.3.5",
+		"lodash": "~3.9.3",
+		"ngstorage": "~0.3.4"
+	}
+}
