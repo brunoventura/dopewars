@@ -1,35 +1,29 @@
 var Config = {
 	starterMoney: 2000,
 	starterSlots: 50,
+	mapFolder: './assets/maps/',
 	calcFloatCoefficient: function(floatValue) {
 		return Math.random() * ((1+floatValue) - (1-floatValue)) + (1-floatValue);
 	}
 };
 
 var Backpack = function(slots) {
+	this.totalSlots = slots;
 	this.slots = slots;
-	this.list = [];
+	this.items = {};
 }
 
 Backpack.prototype = {
 	addDrug: function(drugName, price, quantity) {
-		var index = _.findIndex(this.list, "drug", drugName);
+		if (this.freeSlots() < quantity) return false;
 
-		if (freeSlots < quantity) return false;
+		if (!this.items[drugName]) this.items[drugName] = {quantity: 0, price: 0};
 
-		if (index < 0) {
-			this.list.push({
-				drug: drugName, 
-				price: price, 
-				quantity: quantity
-			});
-			return true;
-		}
-
-		var item = this.list[index];
+		var item = this.items[drugName];
 		var totalQuantity = item.quantity + quantity;
 		item.price = ((item.quantity * item.price) + (quantity * price)) / totalQuantity;
 		item.quantity = totalQuantity;
+		this.slots = this.freeSlots();
 		return true;
 	},
 
@@ -37,12 +31,13 @@ Backpack.prototype = {
 		var index = _.findIndex(this.list, "drug", drugName);
 		if (index < 0) return false;
 
+		this.slots = this.freeSlots();
 	},
 
 	freeSlots: function() {
-		return _.reduce(this.list, function(total, item) {
-			return total + item.quantity;
-		});
+		var totalUsed = 0
+		_.mapValues(this.items, function(n) {totalUsed += n.quantity})
+		return this.totalSlots - totalUsed;
 	}
 
 }
@@ -74,21 +69,18 @@ Player.prototype = {
 }
 
 
-var City = function(name, dangerousness, drugRandomness, copRandomness){
+var City = function(name, drugList, dangerousness, drugRandomness, copRandomness){
 	this.name = name;
 	this.backpack = new Backpack(300);
+	this.drugList = drugList;
 
-	var _init = function() {
-		this.generateDrugValues();
-	};
-
-	_init();
+	this.generateDrugValues(this.drugList);
 };
 
 City.prototype = {
 
 	generateDrugValues: function(drugList) {
-		for (var i = 0; i < this.backpack.slots; i++) {
+		while (this.backpack.slots) {
 			var drug = _.sample(drugList);
 			this.backpack.addDrug(drug.name, drug.price(), 1);
 		}
@@ -110,14 +102,29 @@ Drug.prototype = {
 
 };
 
-
-var World = function() {
+var Board = function(name, cities, mapFile, drugs) {
 	this.id = Math.random().toString(36).substring(7);
-	this.cities = [];
-	this.drugs = [];
-};
+	this.name = name;
+	this.cities = cities;
+	this.mapFile = mapFile;
+	this.drugs = drugs;
 
-World.prototype = {
+	this.drawBoard();
+}
+
+Board.prototype = {
+
+	drawBoard: function() {
+		var mapPath = Config.mapFolder + this.mapFile;
+		var objSvg = document.createElement("object");
+		objSvg.setAttribute("type", "image/svg+xml")
+		objSvg.setAttribute("data", mapPath);
+		objSvg.onload = function() {
+			console.log($("svg", this.contentDocument), mapPath);
+		}
+
+		$("body > .container").append(objSvg);
+	},
 
 	hasCity: function(cityName) {
 		return !!_.find(this.cities, "name", cityName);
@@ -127,15 +134,26 @@ World.prototype = {
 		return _.sample(this.cities).name;
 	}
 
+}
+
+var newYorkCityBoard = function() {
+	var name = "New York City";
+	var drugs = [
+		new Drug("Crack", 2, 0.2),
+		new Drug("Marijuana", 4, 0,5)
+	];
+	var cities = [
+		new City("The Bronx", drugs),
+		new City("Manhattan", drugs),
+		new City("Brooklyn", drugs)		
+	];
+
+	var mapFile = "nyc.svg";
+
+	return new Board(name, cities, mapFile, drugs);
 };
 
-var world1 = new World();
 
-world1.cities.push(new City("The Bronx"));
-world1.cities.push(new City("Manhattan"));
-world1.cities.push(new City("Brooklyn"));
-world1.drugs.push(new Drug("Crack", 2, 0.2));
+var world1 = newYorkCityBoard();
 
 var player = new Player("ventura", world1);
-
-console.log(player);
