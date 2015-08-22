@@ -58,3 +58,16 @@ body {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
+object.map {
+  max-width: 550px;
+}
+
+.map-box {
+  position: relative;
+}
+
+.city-tooltip {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}

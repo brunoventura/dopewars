@@ -69,7 +69,8 @@ Player.prototype = {
 }
 
 
-var City = function(name, drugList, dangerousness, drugRandomness, copRandomness){
+var City = function(id, name, drugList, dangerousness, drugRandomness, copRandomness){
+	this.id = id;
 	this.name = name;
 	this.backpack = new Backpack(300);
 	this.drugList = drugList;
@@ -102,36 +103,27 @@ Drug.prototype = {
 
 };
 
-var Board = function(name, cities, mapFile, drugs) {
+var Board = function(name, cities, mapFile, drugs, drawBoard) {
 	this.id = Math.random().toString(36).substring(7);
 	this.name = name;
 	this.cities = cities;
 	this.mapFile = mapFile;
 	this.drugs = drugs;
-
-	this.drawBoard();
+	this.drawBoard = drawBoard;
 }
 
 Board.prototype = {
 
-	drawBoard: function() {
-		var mapPath = Config.mapFolder + this.mapFile;
-		var objSvg = document.createElement("object");
-		objSvg.setAttribute("type", "image/svg+xml")
-		objSvg.setAttribute("data", mapPath);
-		objSvg.onload = function() {
-			console.log($("svg", this.contentDocument), mapPath);
-		}
-
-		$("body > .container").append(objSvg);
+	hasCity: function(cityId) {
+		return !!_.find(this.cities, "id", cityId);
 	},
 
-	hasCity: function(cityName) {
-		return !!_.find(this.cities, "name", cityName);
+	getCity: function(cityId) {
+		return _.find(this.cities, "id", cityId);	
 	},
 
 	randomCity: function() {
-		return _.sample(this.cities).name;
+		return _.sample(this.cities).id;
 	}
 
 }
@@ -143,17 +135,57 @@ var newYorkCityBoard = function() {
 		new Drug("Marijuana", 4, 0,5)
 	];
 	var cities = [
-		new City("The Bronx", drugs),
-		new City("Manhattan", drugs),
-		new City("Brooklyn", drugs)		
+		new City("The_Bronx", "The Bronx", drugs),
+		new City("Manhattan", "Manhattan", drugs),
+		new City("Brooklyn", "Brooklyn", drugs),
+		new City("Queens", "Queens", drugs),
+		new City("Straten_Island", "Straten Island", drugs)		
 	];
 
 	var mapFile = "nyc.svg";
 
-	return new Board(name, cities, mapFile, drugs);
+	var drawBoard = function() {
+		var mapPath = Config.mapFolder + this.mapFile;
+		var that = this;
+		var objSvg = document.createElement("object");
+		objSvg.setAttribute("class", "map");
+		objSvg.setAttribute("type", "image/svg+xml")
+		objSvg.setAttribute("data", mapPath);
+		objSvg.onload = function() {
+			$(".city-tooltip").removeClass("hide");
+
+			this.contentDocument.addEventListener("mousedown", function(evt){
+				if (_.find(that.cities, { 'id': evt.target.parentElement.id})) {
+					player.travel(evt.target.parentElement.id);
+				}
+			}, false);
+			this.contentDocument.addEventListener("mouseover", function(evt){
+				var city = _.find(that.cities, { 'id': evt.target.parentElement.id});
+				if (city) {
+					$(".city-tooltip")[0].innerText = city.name;
+				}
+			}, false);
+		}
+
+		$("#map-container .map-box").append(objSvg);
+	};
+
+	return new Board(name, cities, mapFile, drugs, drawBoard);
 };
 
+var interface = {
+	showCityName: function(cityName) {
+
+	}
+};
 
 var world1 = newYorkCityBoard();
+world1.drawBoard();
 
 var player = new Player("ventura", world1);
+
+watch(player, "city", function(){
+	console.log("here");
+    $("#city span")[0].innerText = world1.getCity(player.city).name;
+});
+callWatchers(player, "city");
