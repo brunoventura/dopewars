@@ -1,3 +1,18 @@
+(function(){
+	var socket = io.connect('http://localhost:9000');
+
+	socket.on('connected', function (data) {
+		console.log(data);
+	});
+
+	socket.on('serverUpdate', function (data) {
+		console.log(data);
+	})
+
+}());
+
+
+
 var Config = {
 	starterMoney: 2000,
 	starterSlots: 50,
@@ -173,11 +188,17 @@ var newYorkCityBoard = function() {
 	return new Board(name, cities, mapFile, drugs, drawBoard);
 };
 
-var interface = {
-	showCityName: function(cityName) {
-
-	}
+var Interface = function(board, player) {
+	this.board = board;
+	this.player = player;
 };
+
+Interface.prototype = {
+
+	
+
+};
+
 
 var world1 = newYorkCityBoard();
 world1.drawBoard();
