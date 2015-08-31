@@ -1,8 +1,16 @@
 (function(){
 	var socket = io.connect('http://localhost:9000');
 
-	socket.on('connected', function (data) {
-		console.log(data);
+	socket.on('connected', function (data, test) {
+		console.log(data, test);
+	});
+
+	socket.emit("travel", function(data, test) {
+			console.log(data);
+	});
+
+	socket.emit("test", function(data, test) {
+			console.log(data);
 	});
 
 	socket.on('serverUpdate', function (data) {
@@ -71,7 +79,7 @@ Player.prototype = {
 
 	travel: function(destiny) {
 		if (!this.world.hasCity(destiny) || this.city === destiny) return false;
-		
+
 		this.city = destiny;
 		return true;
 	},

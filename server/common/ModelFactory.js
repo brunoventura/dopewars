@@ -3,8 +3,8 @@
 var Player = require('../model/Player');
 var World = require('../model/World');
 
-function newPlayer(world) {
-	return new Player(world);
+function newPlayer(socket) {
+	return new Player(socket);
 };
 
 function newWorld() {

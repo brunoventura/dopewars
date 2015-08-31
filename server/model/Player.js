@@ -2,9 +2,10 @@
 
 var config = require("../config");
 
-var Player = function(world){
+var Player = function(socket){
 	this.name = "";
-	this.world = world;
+	this.world = null;
+	this.socket = socket;
 	//this.backpack = new Backpack(Config.starterSlots);
 
 	this.money = config.STARTER_MONEY;
@@ -26,6 +27,16 @@ Player.prototype = {
 
 		this.backpack.addDrug(drugName, quantity, price);
 	}*/
+
+	getLeanObject: function() {
+		var obj = {
+			name: this.name,
+			money: this.money,
+			world: this.world
+		}
+
+		return obj;
+	}
 }
 
 module.exports = Player;

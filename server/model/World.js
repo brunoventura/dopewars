@@ -1,5 +1,5 @@
 'use strict';
-
+var _ = require('lodash');
 var config = require("../config");
 
 var World = function() {
@@ -7,8 +7,7 @@ var World = function() {
 	this.name = null;
 	this.cities = [];
 	this.mapFile = "";
-	this.drugs = [];	
+	this.drugs = [];
 };
-
 
 module.exports = World;
